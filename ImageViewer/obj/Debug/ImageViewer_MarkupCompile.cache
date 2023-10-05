@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-F:\Programs\ImageViewer\ImageViewer\obj\Debug\
+C:\Github\ImageViewer\ImageViewer\obj\Debug\
 ImageViewer
 none
 false
 DEBUG;TRACE
-F:\Programs\ImageViewer\ImageViewer\App.xaml
-3-1381168345
+C:\Github\ImageViewer\ImageViewer\App.xaml
+3-1014582015
 
-81498737563
-16-696305311
+81593468620
+16-2077292593
 MainWindow.xaml;SettingsWindow.xaml;Themes\Generic.xaml;
 
-False
+True
 

@@ -1,72 +1,89 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.IO;
-using System.Configuration;
 
-namespace ImageViewer.Model
+namespace ImageViewer.Model;
+
+/// <summary>
+/// 設定檔格式
+/// </summary>
+public class Settings
 {
-    public static class Settings
+    /// <summary>
+    /// 實體
+    /// </summary>
+    [JsonIgnore]
+    private static Settings? INSTANCE { get; set; }
+
+    /// <summary>
+    /// 取得實體
+    /// </summary>
+    /// <returns>Settings</returns>
+    public static Settings GetInstance()
     {
-        private static string settingsFullName { get; } = ConfigurationManager.AppSettings["JsonSettingsFile"];
-
-        public static bool IsAutoPlay { get; set; }
-
-        public static int AutoPlaySec { get; set; }
-
-        public static bool IsCyclePlay { get; set; }
-
-        static Settings()
+        if (INSTANCE == null)
         {
-            if (!File.Exists(settingsFullName))
+            if (File.Exists("appsettings.json"))
             {
-                Set s = new Set();
-                s.IsAutoPlay = true;
-                s.AutoPlaySec = 3;
-                s.IsCyclePlay = true;
-
-                File.WriteAllText(settingsFullName, JsonConvert.SerializeObject(s));
+                string json = File.ReadAllText("appsettings.json");
+                INSTANCE = JsonConvert.DeserializeObject<Settings>(json);
             }
 
-            using (StreamReader sr = new StreamReader(settingsFullName))
-            {
-                string json = sr.ReadToEnd();
-                Set s = JsonConvert.DeserializeObject<Set>(json);
-
-                IsAutoPlay = s.IsAutoPlay;
-                AutoPlaySec = s.AutoPlaySec;
-                IsCyclePlay = s.IsCyclePlay;
-
-                sr.Close();
-                sr.Dispose();
-            }
+            INSTANCE ??= GetDefault();
         }
 
-        public static void Save(bool _isAutoPlay, int _autoPlaySec, bool _isCyclePlay)
-        {
-            IsAutoPlay = _isAutoPlay;
-            AutoPlaySec = _autoPlaySec;
-            IsCyclePlay = _isCyclePlay;
-
-            Set s = new Set();
-            s.IsAutoPlay = IsAutoPlay;
-            s.AutoPlaySec = AutoPlaySec;
-            s.IsCyclePlay = IsCyclePlay;
-
-            File.WriteAllText(settingsFullName, JsonConvert.SerializeObject(s));
-        }
+        return INSTANCE;
     }
 
-    public class Set
+    /// <summary>
+    /// 取得預設值
+    /// </summary>
+    /// <param name="writeJson">是否寫入Json檔案</param>
+    /// <returns>Settings</returns>
+    public static Settings GetDefault(bool writeJson = false)
     {
-        public bool IsAutoPlay { get; set; }
+        Settings settings = new();
 
-        public int AutoPlaySec { get; set; }
+        if (writeJson)
+        {
+            string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+            File.WriteAllText("appsettings.json", json);
+        }
 
-        public bool IsCyclePlay { get; set; }
+        return settings;
+    }
+
+    /// <summary>
+    /// 是否自動撥放
+    /// </summary>
+    public bool IsAutoPlay { get; set; } = true;
+
+    /// <summary>
+    /// 循環播放
+    /// </summary>
+    public bool IsCyclePlay { get; set; } = false;
+
+    /// <summary>
+    /// 自動撥放間隔
+    /// </summary>
+    public int AutoPlaySec { get; set; } = 3;
+
+    /// <summary>
+    /// 存檔
+    /// </summary>
+    /// <param name="isAutoPlay">是否自動撥放</param>
+    /// <param name="isCyclePlay">是否循環撥放</param>
+    /// <param name="autoPlaySec">自動撥放間隔秒數</param>
+    public static void Save(bool isAutoPlay, bool isCyclePlay, int autoPlaySec)
+    {
+        Settings settings = new()
+        {
+            IsAutoPlay = isAutoPlay,
+            AutoPlaySec = autoPlaySec,
+            IsCyclePlay = isCyclePlay
+        };
+
+        string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+        File.WriteAllText("appsettings.json", json);
     }
 }
+

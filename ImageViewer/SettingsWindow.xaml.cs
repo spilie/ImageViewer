@@ -1,72 +1,87 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using ImageViewer.Model;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using ImageViewer.Model;
 
-namespace ImageViewer
+namespace ImageViewer;
+
+/// <summary>
+/// SettingsWindow.xaml 的互動邏輯
+/// </summary>
+public partial class SettingsWindow : Window
 {
     /// <summary>
-    /// SettingsWindow.xaml 的互動邏輯
+    /// 設定檔案
     /// </summary>
-    public partial class SettingsWindow : Window
+    private Settings Settings { get; set; }
+
+    /// <summary>
+    /// 父層Windows
+    /// </summary>
+    private MainWindow Parents { get; set; }
+
+    /// <summary>
+    /// 建構式
+    /// </summary>
+    /// <param name="parent">父層</param>
+    public SettingsWindow(MainWindow parent)
     {
-        public SettingsWindow()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+        Parents = parent;
+        Settings = Settings.GetInstance();
+    }
 
-        private MainWindow parent { get; set; }
+    /// <summary>
+    /// Load事件
+    /// </summary>
+    /// <param name="sender">Sender</param>
+    /// <param name="e">事件</param>
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (Settings.IsAutoPlay)
+            ChkAutoPlay.IsChecked = true;
 
-        public SettingsWindow(MainWindow _parent)
-        {
-            InitializeComponent();
-            this.parent = _parent;
-        }
+        if (Settings.IsCyclePlay)
+            ChkCyclePlay.IsChecked = true;
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (Settings.IsAutoPlay)
-                chkAutoPlay.IsChecked = true;
+        TxtAutoPlaySec.Text = Settings.AutoPlaySec.ToString();
+    }
 
-            if (Settings.IsCyclePlay)
-                chkCyclePlay.IsChecked = true;
+    /// <summary>
+    /// 存檔按鈕事件
+    /// </summary>
+    /// <param name="sender">Sender</param>
+    /// <param name="e">事件</param>
+    private void BtnSave_Click(object sender, RoutedEventArgs e)
+    {
+        bool autoPlay = ChkAutoPlay.IsChecked != null && ChkAutoPlay.IsChecked.Value;
+        bool cyclePlay = ChkCyclePlay.IsChecked != null && ChkCyclePlay.IsChecked.Value;
+        int autoPlaySec = Convert.ToInt32(TxtAutoPlaySec.Text);
 
-            txtAutoPlaySec.Text = Settings.AutoPlaySec.ToString();
-        }
+        Settings.Save(autoPlay, cyclePlay, autoPlaySec);
+        Parents.ReloadSettings();
 
-        private void btnSave_Click(object sender, RoutedEventArgs e)
-        {
-            Settings.Save((bool)chkAutoPlay.IsChecked, Convert.ToInt32(txtAutoPlaySec.Text), (bool)chkCyclePlay.IsChecked);
-            this.parent.ReloadSettings();
+        Close();
+    }
 
-            this.Close();
-        }
+    /// <summary>
+    /// 關閉事件
+    /// </summary>
+    /// <param name="sender">Sender</param>
+    /// <param name="e">事件</param>
+    private void BtnLeave_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
 
-        private void btnLeave_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
-        /// <summary>
-        /// Judge TextBox input is number or not
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
-        {
-            Regex regex = new Regex("[^0-9]+");
-            e.Handled = regex.IsMatch(e.Text);
-        }
+    /// <summary>
+    /// 判斷輸入是否為數字
+    /// </summary>
+    /// <param name="sender">Sender</param>
+    /// <param name="e">事件</param>
+    private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+    {
+        Regex regex = new("[^0-9]+");
+        e.Handled = regex.IsMatch(e.Text);
     }
 }
